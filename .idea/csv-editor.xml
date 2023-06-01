@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CsvFileAttributes">
+    <option name="attributeMap">
+      <map>
+        <entry key="\69시간제\other_news_final.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\other_news_final.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\전체 ver\other_news_final.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
