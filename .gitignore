@@ -8,3 +8,9 @@ example
 산업_규모별_임금_및_근로시간.csv
 sentimental_analyze.py
 전체 ver
+naver_news_final.csv
+used_for_finetuning
+naver_blogs_final.csv
+naver_blogs_without_content.csv
+news_comment.csv
+other_blogs_final.csv

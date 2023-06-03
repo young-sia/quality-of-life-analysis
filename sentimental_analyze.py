@@ -1,107 +1,88 @@
 import torch
-from torch.utils.data import DataLoader
-from transformers import AdamW
-from transformers import get_linear_schedule_with_warmup
-from transformers import BertTokenizer, BertForSequenceClassification
-
-# Step 2: Load KoBERT model and tokenizer
-model_name = "skt/kobert-base-v1"
-tokenizer = BertTokenizer.from_pretrained(model_name)
-model = BertForSequenceClassification.from_pretrained(model_name, num_labels=3)  # 3 for positive, negative, neutral
-
-# Step 3: Prepare your dataset (X: input text, y: corresponding sentiment labels)
-train_dataset = ...  # Prepare your training dataset
-test_dataset = ...  # Prepare your testing dataset
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import pandas as pd
+import re
+from tqdm import tqdm
+import torch
+import logging
+from analyze_data import *
 
 
-# Step 4: Tokenize and encode the text
-def tokenize_text(text):
-    tokens = tokenizer.encode_plus(
-        text,
-        add_special_tokens=True,
-        max_length=128,  # Adjust as per your requirements
-        padding="max_length",
-        truncation=True,
-        return_tensors="pt"
-    )
-    return tokens["input_ids"], tokens["attention_mask"]
+def removing_non_korean(df):
+    for idx, row in tqdm(df.iterrows(), desc = 'removing_non_korean', total = len(df)):
+            new_doc = re.sub('[^가-힣]', '', row['document']).strip()
+            df.loc[idx, 'document'] = new_doc
+    return df
 
-# Step 5: Create data loaders
-batch_size = 16  # Adjust as per your requirements
-train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-# Step 6: Fine-tune KoBERT
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
+def sentimental_analysis(text):
+    # Step 1: Load the pre-trained koELECTRA model and tokenizer
+    model_name = "monologg/koelectra-base-v3-discriminator"
+    # tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-# Step 7: Train the model
-optimizer = AdamW(model.parameters(), lr=2e-5)  # Adjust learning rate as per your requirements
-total_steps = len(train_dataloader) * num_epochs
-scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
-loss_fn = torch.nn.CrossEntropyLoss()
+    # Disable the logging level for the specific warning
+    logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
-num_epochs = 3  # Adjust as per your requirements
+    # Load the model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-for epoch in range(num_epochs):
-    model.train()
-    total_loss = 0
+    # Step 2: Define the sentiment labels
+    sentiment_labels = ["negative", "positive"]
 
-    for batch in train_dataloader:
-        input_ids, attention_mask = tokenize_text(batch["text"])
-        labels = batch["labels"].to(device)
+    # Step 3: Prepare the input text
+    inputs = tokenizer(text, return_tensors = "pt")
+    input_ids = inputs["input_ids"]
+    attention_mask = inputs["attention_mask"]
 
-        optimizer.zero_grad()
-        outputs = model(input_ids.to(device), attention_mask=attention_mask.to(device), labels=labels)
-        loss = outputs.loss
-        total_loss += loss.item()
-
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)  # Gradient clipping if needed
-
-        optimizer.step()
-        scheduler.step()
-
-    avg_loss = total_loss / len(train_dataloader)
-    print(f"Epoch {epoch+1}/{num_epochs} - Average Loss: {avg_loss}")
-
-# Step 8: Evaluate the model
-model.eval()
-eval_loss, eval_accuracy = 0, 0
-
-for batch in test_dataloader:
-    input_ids, attention_mask = tokenize_text(batch["text"])
-    labels = batch["labels"].to(device)
-
+    # Step 4: Perform sentiment analysis
     with torch.no_grad():
-        outputs = model(input_ids.to(device), attention_mask=attention_mask.to(device), labels=labels)
+        logits = model(input_ids, attention_mask = attention_mask).logits
+    predicted_label_idx = torch.argmax(logits, dim = 1).item()
+    predicted_label = sentiment_labels[predicted_label_idx]
 
-    logits = outputs.logits
-    _, preds = torch.max(logits, dim=1)
+    # Step 5: Print the predicted sentiment label
+    # print("Input text:", text)
+    # print("Predicted sentiment:", predicted_label)
 
-    loss = outputs.loss
-    eval_loss += loss.item()
-    eval_accuracy += torch.sum(preds == labels).item()
-
-avg_loss = eval_loss / len(test_dataloader)
-accuracy = eval_accuracy / len(test_dataset)
-print(f"Test Loss: {avg_loss} - Accuracy: {accuracy}")
-
-
-# Step 9: Perform sentiment analysis on new text
-def perform_sentiment_analysis(text):
-    model.eval()
-    input_ids, attention_mask = tokenize_text(text)
-
-    with torch.no_grad():
-        outputs = model(input_ids.to(device), attention_mask=attention_mask.to(device))
-
-    logits = outputs.logits
-    _, predicted_label = torch.max(logits, dim=1)
-
-    return predicted_label.item()
+    if predicted_label == 'positive':
+        return 1
+    else:
+        return 0
 
 
+def main():
+    blog_data = pd.read_csv('naver_news_final.csv')
+    sentimental_result = []
+    count = 0
 
+    summarizations = list()
+    for each_blog in blog_data['content']:
+        summarizations.extend(each_blog)
+
+    for content in blog_data['content']:
+        print('start of analyzing')
+        number_of_sentences = 0
+        sum_of_sentiment = 0
+        sentences = content.split('.')
+        for sent in sentences:
+            print('loading....')
+            # print(sent)
+            sum_of_sentiment += sentimental_analysis(sent)
+            number_of_sentences += 1
+
+        average_of_sentement = sum_of_sentiment / number_of_sentences
+        sentimental_result.append(average_of_sentement)
+
+        count += 1
+        print(sentimental_result)
+        print(count, '번째 분석 완료')
+    blog_data['feelings'] = sentimental_result
+    blog_data.to_csv('naver_blog_with_sentiment.csv', index = False, encoding = "utf-8-sig")
+
+
+if __name__ == '__main__':
+    main()
 
 

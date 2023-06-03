@@ -10,6 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import re
 from bs4 import BeautifulSoup
 import requests
 
@@ -20,13 +21,14 @@ client_id = os.environ.get('NAVER_ID')
 client_secret = os.environ.get("NAVER_PASSWORD")
 
 
-def retrieve_search_blog_data():
-    keyword = '69시간'
+def retrieve_search_blog_data(start, keyword):
+
     enc_text = urllib.parse.quote(keyword)
     logging.info(f'about to search blog data with keyword {keyword}')
+    display = 100
 
-    url = "https://openapi.naver.com/v1/search/blog?query=" + enc_text  # JSON 결과
-
+    url = "https://openapi.naver.com/v1/search/blog?query=" + enc_text +\
+          '&display='+str(display) + '&start='+str(start)+'&sort=sim' # JSON 결과
     request = urllib.request.Request(url)
     request.add_header("X-Naver-Client-Id", client_id)
     request.add_header("X-Naver-Client-Secret", client_secret)
@@ -58,6 +60,10 @@ def get_content_from_naver(driver, blog_data):
     naver_blog_all = pd.DataFrame(blog_data)
     contents = {'content': []}
     urls = blog_data['link']
+
+    pattern1 = '<[^>]*>'
+    pattern2 = """[\n\n\n\n\n// flash 오류를 우회하기 위한 함수 추가\nfunction _flash_removeCallback() {}"""
+    count = 0
     for link in urls:
         driver.get(link)
         time.sleep(1)
@@ -67,12 +73,24 @@ def get_content_from_naver(driver, blog_data):
         # 본문 내용 크롤링하기
         try:
             a = driver.find_element(By.CSS_SELECTOR, 'div.se-main-container').text
-            contents['content'].append(a)
+            content = re.sub(pattern = pattern1, repl = '', string = a)
+            content = content.replace(pattern2, '')
+            content = content.strip()
+            contents['content'].append(content)
+            count += 1
+            print(count, '번째 기사글')
+            print(content)
             # print('작동')
         # NoSuchElement 오류시 예외처리(구버전 블로그에 적용)
         except NoSuchElementException:
             a = driver.find_element(By.CSS_SELECTOR, 'div#content-area').text
-            contents['content'].append(a)
+            content = re.sub(pattern = pattern1, repl = '', string = a)
+            content = content.replace(pattern2, '')
+            content = content.strip()
+            contents['content'].append(content)
+            count += 1
+            print(count, '번째 기사글')
+            print(content)
             # print('작동안함')
 
     contents = pd.DataFrame(contents)
@@ -80,18 +98,24 @@ def get_content_from_naver(driver, blog_data):
     return naver_blog_all
 
 
-def sentimental_analysis():
-    pass
-
-
 def main():
-    blog_data = retrieve_search_blog_data()
-    naver_blogs, other_blogs = distinguish_naver_other_blog(blog_data)
-    # print(naver_blogs)
-    # print(else_blogs)
+    # start_number = [1, 101, 201]
+    # keywords = ['주 69시간', '주 60시간', '4.5일제', '주 4일제']
+    # retrieved_data = {'items': []}
+    # for keyword in keywords:
+    #     for start in start_number:
+    #         news_data = retrieve_search_blog_data(start, keyword)
+    #         retrieved_data['items'].extend(news_data['items'])
+    # naver_blogs, other_blogs = distinguish_naver_other_blog(retrieved_data)
+    # naver_blogs_dataframe = pd.DataFrame(naver_blogs)
+    # # print(naver_blogs)
+    # # print(else_blogs)
+    #
+    # other_blogs = pd.DataFrame(other_blogs)
+    # other_blogs.to_csv('other_blogs_final.csv', index = False, encoding = "utf-8-sig")
+    # naver_blogs_dataframe.to_csv('naver_blogs_without_content.csv', index = False, encoding = "utf-8-sig" )
 
-    other_blogs = pd.DataFrame(other_blogs)
-    other_blogs.to_csv('other_blogs.csv', index = False, encoding = "utf-8-sig")
+    naver_blogs = pd.read_csv('naver_blogs_without_content.csv')
 
     options = webdriver.ChromeOptions()
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -101,7 +125,7 @@ def main():
     driver.implicitly_wait(3)
     naver_blog_all = get_content_from_naver(driver, naver_blogs)
 
-    naver_blog_all.to_csv('naver_blogs.csv', index = False, encoding = "utf-8-sig")
+    naver_blog_all.to_csv('naver_blogs_final.csv', index = False, encoding = "utf-8-sig")
 
 
 if __name__ == "__main__":
