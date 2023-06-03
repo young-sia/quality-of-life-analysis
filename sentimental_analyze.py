@@ -74,11 +74,19 @@ def main():
     print('combined into 2 contents')
     summarization = list()
     for content in content1:
-        summary1 = summarize_content(content)
-        summarization.extend(summary1)
+        if isinstance(content, str):
+            summary = summarize_content(content)
+            summarization.extend(summary)
+        else:
+            print('error')
+            pass
     for content in content2:
-        summary2 = summarize_content(content)
-        summarization.extend(summary2)
+        if isinstance(content, str):
+            summary = summarize_content(content)
+            summarization.extend(summary)
+        else:
+            print('error')
+            pass
     print('finished summarizing 2 content')
     summarizations = summarize_content(summarization)
     # print(summarizations)
