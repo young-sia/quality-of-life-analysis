@@ -47,9 +47,11 @@ def wordcloud(naver_data):
         # print(n_adj)
         all_words.extend(n_adj)
     # print(all_words)
-    stop_words = "등 며 있다 고 이라고 는데 다는 다며 니다 기자 이어 으면 연합뉴스 아니 아서 아야 도록 때문 ㄴ다 ㄴ다고 ㄴ다는 ㅂ니다 에서 ' 마다 로 - " \
-                 "입니다 있습니다 회 라는 라며 면서 부터 보다 에게 도 의 인 과 습니다 와 △ 을 를 전 난 일 걸 뭐 줄 만 " \
-                 "건 분 개 끝 잼 이거 번 중 듯 때 게 내 말 나 수 거 점 것 만큼 아 으로 던 다 에 이 것 는 가"
+    stop_words = "윤 지난 제 주 등 며 있다 고 이라고 는데 다는 다며 니다 기자 이어 으면 연합뉴스 아니 아서 아야 도록 때문 ㄴ다 ㄴ다고 ㄴ다는 ㅂ니다 에서 ' 마다 로 - " \
+                 "입니다 있습니다 회 라는 라며 면서 부터 보다 에게 도 의 인 과 습니다 와 △ 을 를 전 난 일 걸 뭐 줄 만 그럼 하나 왜 자기 임 사람 발표 있는" \
+                 "건 분 개 끝 잼 이거 번 중 듯 때 게 내 말 나 수 거 점 것 만큼 아 으로 던 다 에 이 것 는 가 그 YTN 국민 시간 생각 더 니 해 애 보고 하라 너 대통령" \
+                 "안 입 본인 이제 뭘 답 알 저 얘기 명 달 배 위해 건 쉬 앞 살 질 함 네 찍 좀 있는 또 같은 지금 누가 먼저 안안 안  안 그냥 못 우리 해도 누구 언제 건가 기사" \
+                 "당신 연차 이야기 날 정 계속 그게 열 탓 자 처 팔 데 없어 머리 "
     stop_words = set(stop_words.split(" "))
 
     all_words = [word for word in all_words if not word in stop_words]
@@ -75,11 +77,11 @@ def wordcloud(naver_data):
     plt.show()
 
 
-def summarize_news(news_content):
+def summarize_content(summary_need_content):
     per = 0.05
     nlp = spacy.load("ko_core_news_sm")
     table = str.maketrans('[]"=,()!@#$%^&*\'', '                ')
-    news_fixed = news_content.translate(table)
+    news_fixed = summary_need_content.translate(table)
     doc = nlp(news_fixed)
     # tokens = [token.text for token in doc]
     word_frequencies = dict()
@@ -207,21 +209,21 @@ def main():
     # print(naver_data.head())
     # text_cluster_analysis(naver_data)
     wordcloud(naver_data)
-    summarizations = list()
-    for each_news in naver_data['content']:
-        summarize = summarize_news(each_news)
-        summarizations.append(summarize)
-    print('finished summarization of each article')
-    naver_data['summary'] = summarizations
-    naver_data.to_csv('naver_news_final_with_summaries.csv', index = False, encoding = "utf-8-sig")
-    summaries_of_each_news = ''.join(summarizations)
-    total_summary = summarize_news(summaries_of_each_news)
+    # summarizations = list()
+    # for each_news in naver_data['content']:
+    #     summarize = summarize_content(each_news)
+    #     summarizations.append(summarize)
+    # print('finished summarization of each article')
+    # naver_data['summary'] = summarizations
+    # naver_data.to_csv('naver_news_final_with_summaries.csv', index = False, encoding = "utf-8-sig")
+    # summaries_of_each_news = ''.join(summarizations)
+    # total_summary = summarize_content(summaries_of_each_news)
 
-    for time in range(1, 10):
-        print(f'추가요약 {time}번째')
-        total_summary = summarize_news(total_summary)
-
-    print(total_summary)
+    # for time in range(1, 10):
+    #     print(f'추가요약 {time}번째')
+    #     total_summary = summarize_content(total_summary)
+    #
+    # print(total_summary)
 
 
 if __name__ == '__main__':

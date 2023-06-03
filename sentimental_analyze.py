@@ -53,33 +53,85 @@ def sentimental_analysis(text):
 
 
 def main():
-    blog_data = pd.read_csv('naver_news_final.csv')
-    sentimental_result = []
-    count = 0
+    blog_data = pd.read_csv('naver_blogs_final.csv')
+    blog_data = blog_data.dropna(axis=0)
+    # wordcloud(blog_data)
 
-    summarizations = list()
-    for each_blog in blog_data['content']:
-        summarizations.extend(each_blog)
+    # # 요약본을 감성분석할 때
+    blog_data_1 = blog_data.sample(frac = 0.5, random_state = 2022)
+    blog_data_2 = blog_data.drop(blog_data_1.index)
+    blog_content_1 = blog_data_1['content']
+    blog_content_2 = blog_data_2['content']
 
-    for content in blog_data['content']:
-        print('start of analyzing')
-        number_of_sentences = 0
-        sum_of_sentiment = 0
-        sentences = content.split('.')
-        for sent in sentences:
-            print('loading....')
-            # print(sent)
-            sum_of_sentiment += sentimental_analysis(sent)
-            number_of_sentences += 1
+    content1 = list()
+    for content in blog_content_1:
+        # print(content)
+        content1.append(content)
 
-        average_of_sentement = sum_of_sentiment / number_of_sentences
-        sentimental_result.append(average_of_sentement)
+    content2 = list()
+    for content in blog_content_2:
+        content2.append(content)
+    print('combined into 2 contents')
+    summarization = list()
+    for content in content1:
+        summary1 = summarize_content(content)
+        summarization.extend(summary1)
+    for content in content2:
+        summary2 = summarize_content(content)
+        summarization.extend(summary2)
+    print('finished summarizing 2 content')
+    summarizations = summarize_content(summarization)
+    # print(summarizations)
+    print('finished combining and summarizing')
 
-        count += 1
-        print(sentimental_result)
-        print(count, '번째 분석 완료')
-    blog_data['feelings'] = sentimental_result
-    blog_data.to_csv('naver_blog_with_sentiment.csv', index = False, encoding = "utf-8-sig")
+    with open('summary_of_blogs.txt', 'w', encoding = 'UTF-8') as f:
+        for name in summarizations:
+            f.write(name)
+
+    print('start of analyzing')
+    sentences = summarizations.split('.')
+    number_of_sentences = 0
+    sum_of_sentiment = 0
+    score_of_sentences = list()
+
+    for content in sentences:
+        # print(content)
+        print('loading.......')
+        score_of_sentence = sentimental_analysis(content)
+        score_of_sentences.append(score_of_sentence)
+        sum_of_sentiment += score_of_sentence
+        number_of_sentences += 1
+        print(number_of_sentences, '번째 문장 분석 완료')
+
+    average_of_sentiment = sum_of_sentiment/number_of_sentences
+    print(average_of_sentiment)
+
+    summary_sentimental_result = {'sentence': sentences, 'score': score_of_sentences}
+    summary_sentimental_result = pd.DataFrame(summary_sentimental_result)
+    summary_sentimental_result.to_csv('sentimental result of summary.csv', index = False, encoding = "utf-8-sig")
+
+    # # 블로그 내용 하나하나 전부 다 감성분석할 때
+    # sentimental_result = []
+    # count = 0
+    # for content in blog_data['content']:
+    #     print('start of analyzing')
+    #     number_of_sentences = 0
+    #     sum_of_sentiment = 0
+    #     sentences = content.split('.')
+    #     for sent in sentences:
+    #         print('loading....')
+    #         # print(sent)
+    #         sum_of_sentiment += sentimental_analysis(sent)
+    #         number_of_sentences += 1
+    #
+    #     average_of_sentement = sum_of_sentiment / number_of_sentences
+    #     sentimental_result.append(average_of_sentement)
+    #
+    #     count += 1
+    #     print(sentimental_result)
+    #     print(count, '번째 분석 완료')
+    # blog_data['feelings'] = sentimental_result
+    # blog_data.to_csv('naver_blog_with_sentiment.csv', index = False, encoding = "utf-8-sig")
 
 
 if __name__ == '__main__':

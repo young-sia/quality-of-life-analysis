@@ -4,7 +4,7 @@ import time
 import pandas as pd
 from selenium.webdriver.common.by import By
 from sentimental_analyze import *
-
+from analyze_data import *
 
 def get_comment_urls(original_urls):
     modified_urls = []
@@ -54,34 +54,40 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
     return list_contents
 
 
+def after_scraping(data=pd.read_csv('news_comment.csv')):
+    data = data.rename(columns = {'document':'content'})
+    wordcloud(data)
+
+
 def main():
-    news_data = pd.read_csv('naver_news_final.csv')
-    news_data = news_data.dropna(axis = 0)
-    original_urls = news_data['link']
-    # original_urls = [
-    #     "https://n.news.naver.com/mnews/article/002/0002286908?sid=102",
-    #     "https://n.news.naver.com/mnews/article/243/0000045510?sid=101"
-    # ]
-    # 원하는 기사 url 입력
-    driver = webdriver.Chrome('./chromedriver')
-    comment_urls = get_comment_urls(original_urls)
-
-    # 함수 실행
-    comments = list()
-    for url in comment_urls:
-        comment = get_naver_news_comments(url)
-        comments.extend(comment)
-
-    print(comments)
-
-    comments_file = {'document': comments}
-    comments_file = pd.DataFrame(comments_file)
-    comments_file.to_csv('news_comment.csv',  index = False, encoding = "utf-8-sig")
+    # news_data = pd.read_csv('naver_news_final.csv')
+    # news_data = news_data.dropna(axis = 0)
+    # original_urls = news_data['link']
+    # # original_urls = [
+    # #     "https://n.news.naver.com/mnews/article/002/0002286908?sid=102",
+    # #     "https://n.news.naver.com/mnews/article/243/0000045510?sid=101"
+    # # ]
+    # # 원하는 기사 url 입력
+    # driver = webdriver.Chrome('./chromedriver')
+    # comment_urls = get_comment_urls(original_urls)
+    #
+    # # 함수 실행
+    # comments = list()
+    # for url in comment_urls:
+    #     comment = get_naver_news_comments(url)
+    #     comments.extend(comment)
+    #
+    # print(comments)
+    #
+    # comments_file = {'document': comments}
+    # comments_file = pd.DataFrame(comments_file)
+    # comments_file.to_csv('news_comment.csv',  index = False, encoding = "utf-8-sig")
 
     # fixed_comments = removing_non_korean(comments_file)
     # print(fixed_comments)
     # for comment in comments:
     #     sentimental_analysis(comment)
+    after_scraping()
 
 
 if __name__ == '__main__':
