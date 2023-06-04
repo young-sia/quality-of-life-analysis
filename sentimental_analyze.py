@@ -57,9 +57,11 @@ def main():
     blog_data = blog_data.dropna(axis=0)
     # wordcloud(blog_data)
 
-    print('내용:', len(blog_data['content']))
+    print('블로그 갯수:', len(blog_data['content']))
     sentimental_result = []
     count = 0
+    exception_count = 0
+
     for content in blog_data['content']:
         print('start of analyzing')
         number_of_sentences = 0
@@ -68,8 +70,12 @@ def main():
         for sent in sentences:
             print('loading....')
             # print(sent)
-            sum_of_sentiment += sentimental_analysis(sent)
-            number_of_sentences += 1
+            try:
+                sum_of_sentiment += sentimental_analysis(sent)
+                number_of_sentences += 1
+            except:
+                exception_count += 1
+                pass
 
         average_of_sentement = sum_of_sentiment / number_of_sentences
         sentimental_result.append(average_of_sentement)
@@ -77,6 +83,7 @@ def main():
         count += 1
         print(sentimental_result)
         print(count, '번째 분석 완료')
+    print(exception_count, '개의 예외 문장 발생')
     blog_data['feelings'] = sentimental_result
     blog_data.to_csv('naver_blog_with_sentiment.csv', index = False, encoding = "utf-8-sig")
 

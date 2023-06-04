@@ -218,7 +218,7 @@ def main():
     # naver_data.to_csv('naver_news_final_with_summaries.csv', index = False, encoding = "utf-8-sig")
     # summaries_of_each_news = ''.join(summarizations)
     # total_summary = summarize_content(summaries_of_each_news)
-
+    #
     # for time in range(1, 10):
     #     print(f'추가요약 {time}번째')
     #     total_summary = summarize_content(total_summary)

@@ -24,7 +24,7 @@ def main():
     naver_news_all = get_content_data_from_naver(headers, naver_news)
     naver_news_all.to_csv('naver_news_final.csv', index = False, encoding = "utf-8-sig")
 
-    text_cluster_analysis(naver_news_all)
+    # text_cluster_analysis(naver_news_all)
 
 
 if __name__ == "__main__":

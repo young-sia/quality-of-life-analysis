@@ -54,12 +54,13 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
     return list_contents
 
 
-def after_scraping(data=pd.read_csv('news_comment.csv')):
+def after_scraping(data):
     data = data.rename(columns = {'document':'content'})
     wordcloud(data)
 
 
 def main():
+    pass
     # news_data = pd.read_csv('naver_news_final.csv')
     # news_data = news_data.dropna(axis = 0)
     # original_urls = news_data['link']
@@ -82,12 +83,13 @@ def main():
     # comments_file = {'document': comments}
     # comments_file = pd.DataFrame(comments_file)
     # comments_file.to_csv('news_comment.csv',  index = False, encoding = "utf-8-sig")
-
+    #
     # fixed_comments = removing_non_korean(comments_file)
     # print(fixed_comments)
     # for comment in comments:
     #     sentimental_analysis(comment)
-    after_scraping()
+    # comment_data = pd.read_csv('news_comment.csv')
+    # after_scraping(comment_data)
 
 
 if __name__ == '__main__':
