@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from sentimental_analyze import *
 from analyze_data import *
 
+
 def get_comment_urls(original_urls):
     modified_urls = []
     # count = 0
