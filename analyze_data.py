@@ -39,6 +39,8 @@ def wordcloud(naver_data):
     all_words = list()
 
     for text in naver_data['content']:
+        if isinstance(text, float):
+            continue
         line = okt.pos(text)  # 빈칸 라인(line = [])에 품사 붙여주는 함수 pos 사용
         n_adj = []
         for word, tag in line:
@@ -51,7 +53,9 @@ def wordcloud(naver_data):
                  "입니다 있습니다 회 라는 라며 면서 부터 보다 에게 도 의 인 과 습니다 와 △ 을 를 전 난 일 걸 뭐 줄 만 그럼 하나 왜 자기 임 사람 발표 있는" \
                  "건 분 개 끝 잼 이거 번 중 듯 때 게 내 말 나 수 거 점 것 만큼 아 으로 던 다 에 이 것 는 가 그 YTN 국민 시간 생각 더 니 해 애 보고 하라 너 대통령" \
                  "안 입 본인 이제 뭘 답 알 저 얘기 명 달 배 위해 건 쉬 앞 살 질 함 네 찍 좀 있는 또 같은 지금 누가 먼저 안안 안  안 그냥 못 우리 해도 누구 언제 건가 기사" \
-                 "당신 연차 이야기 날 정 계속 그게 열 탓 자 처 팔 데 없어 머리"
+                 "당신 연차 이야기 날 정 계속 그게 열 탓 자 처 팔 데 없어 머리 통해 서울 대한 대해 최대 주장 근무 오전 관련 방안 마련 정부 대표 박 의장 한국 결과" \
+                 "최고 사회 회사 회의 뉴스 대통령실 사진 진짜 소리 제발 일해 인간 이런 나라 무슨 없다 정말 무슨  대한민국 표 없고 제대로 국가 요 곳 및 워 이번 " \
+                 "오늘 경우 많은 이유 글 "
     stop_words = set(stop_words.split(" "))
 
     all_words = [word for word in all_words if not word in stop_words]

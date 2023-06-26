@@ -38,6 +38,7 @@ def retrieve_search_blog_data(start, keyword):
         response_body = response.read()
         logging.info(response_body.decode('utf-8'))
         response_json = json.loads(response_body)
+        print(response_json)
         return response_json
     else:
         logging.info("Error Code:" + rescode)
@@ -107,26 +108,26 @@ def main():
         for start in start_number:
             news_data = retrieve_search_blog_data(start, keyword)
             retrieved_data['items'].extend(news_data['items'])
-    naver_blogs, other_blogs = distinguish_naver_other_blog(retrieved_data)
-    naver_blogs_dataframe = pd.DataFrame(naver_blogs)
-    # print(naver_blogs)
-    # print(else_blogs)
-
-    other_blogs = pd.DataFrame(other_blogs)
-    other_blogs.to_csv('other_blogs_final.csv', index = False, encoding = "utf-8-sig")
-    naver_blogs_dataframe.to_csv('naver_blogs_without_content.csv', index = False, encoding = "utf-8-sig" )
-
-    naver_blogs = pd.read_csv('naver_blogs_without_content.csv')
-
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
-
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    driver.implicitly_wait(3)
-    naver_blog_all = get_content_from_naver(driver, naver_blogs)
-
-    naver_blog_all.to_csv('naver_blogs_final.csv', index = False, encoding = "utf-8-sig")
+    # naver_blogs, other_blogs = distinguish_naver_other_blog(retrieved_data)
+    # naver_blogs_dataframe = pd.DataFrame(naver_blogs)
+    # # print(naver_blogs)
+    # # print(else_blogs)
+    #
+    # other_blogs = pd.DataFrame(other_blogs)
+    # other_blogs.to_csv('other_blogs_final.csv', index = False, encoding = "utf-8-sig")
+    # naver_blogs_dataframe.to_csv('naver_blogs_without_content.csv', index = False, encoding = "utf-8-sig" )
+    #
+    # naver_blogs = pd.read_csv('naver_blogs_without_content.csv')
+    #
+    # options = webdriver.ChromeOptions()
+    # options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    # options.add_experimental_option("useAutomationExtension", False)
+    #
+    # driver = webdriver.Chrome(ChromeDriverManager().install())
+    # driver.implicitly_wait(3)
+    # naver_blog_all = get_content_from_naver(driver, naver_blogs)
+    #
+    # naver_blog_all.to_csv('naver_blogs_final.csv', index = False, encoding = "utf-8-sig")
 
 
 if __name__ == "__main__":
